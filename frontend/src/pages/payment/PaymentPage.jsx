@@ -13,11 +13,18 @@ export default function PaymentPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    merchantsAPI.getAll({ merchantId }).then(({ data }) => {
-      const m = data.data?.find(m => m.merchantId === merchantId && m.status === 'approved');
-      if (m) setMerchant(m); else setNotFound(true);
-    }).catch(() => setNotFound(true)).finally(() => setLoading(false));
-  }, [merchantId]);
+  fetch(`https://apisteppays.in/pay/${merchantId}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        setMerchant(data.data);
+      } else {
+        setNotFound(true);
+      }
+    })
+    .catch(() => setNotFound(true))
+    .finally(() => setLoading(false));
+}, [merchantId]);
 
   const handlePay = async (e) => {
     e.preventDefault();
