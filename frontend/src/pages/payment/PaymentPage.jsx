@@ -13,7 +13,7 @@ export default function PaymentPage() {
   const [error, setError] = useState('');
 
  useEffect(() => {
-  fetch(`https://apisteppays.in/api/merchants/${merchantId}`)
+  fetch(`https://apisteppays.in/api/merchants/public/${merchantId}`)
     .then(res => res.json())
     .then(data => {
       if (data.success) {
