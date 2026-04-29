@@ -26,32 +26,80 @@ export default function PaymentPage() {
     .finally(() => setLoading(false));
 }, [merchantId]);
 
-  const handlePay = async (e) => {
-    e.preventDefault();
-    setError('');
-    if (parseFloat(form.amount) < 1) return setError('Minimum amount is ₹1');
-    if (parseFloat(form.amount) > 500000) return setError('Maximum amount is ₹5,00,000');
-    setSubmitting(true);
-    try {
-      const { data } = await paymentAPI.initiate({ merchantId, ...form });
-      // Create and submit PayU form
-      const payuForm = document.createElement('form');
-      payuForm.method = 'POST';
-      payuForm.action = data.data.payuUrl;
-      Object.entries(data.data.params).forEach(([key, value]) => {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = key;
-        input.value = value;
-        payuForm.appendChild(input);
-      });
-      document.body.appendChild(payuForm);
-      payuForm.submit();
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to initiate payment. Please try again.');
-      setSubmitting(false);
-    }
-  };
+  // const handlePay = async (e) => {
+  //   e.preventDefault();
+  //   setError('');
+  //   if (parseFloat(form.amount) < 1) return setError('Minimum amount is ₹1');
+  //   if (parseFloat(form.amount) > 500000) return setError('Maximum amount is ₹5,00,000');
+  //   setSubmitting(true);
+  //   try {
+  //     const { data } = await paymentAPI.initiate({ merchantId, ...form });
+  //     // Create and submit PayU form
+  //     const payuForm = document.createElement('form');
+  //     payuForm.method = 'POST';
+  //     payuForm.action = data.data.payuUrl;
+  //     Object.entries(data.data.params).forEach(([key, value]) => {
+  //       const input = document.createElement('input');
+  //       input.type = 'hidden';
+  //       input.name = key;
+  //       input.value = value;
+  //       payuForm.appendChild(input);
+  //     });
+  //     document.body.appendChild(payuForm);
+  //     payuForm.submit();
+  //   } catch (err) {
+  //     setError(err.response?.data?.message || 'Failed to initiate payment. Please try again.');
+  //     setSubmitting(false);
+  //   }
+  // };
+
+
+
+
+const handlePay = async (e) => {
+  e.preventDefault();
+  setError('');
+
+  if (parseFloat(form.amount) < 1) return setError('Minimum amount is ₹1');
+  if (parseFloat(form.amount) > 500000) return setError('Maximum amount is ₹5,00,000');
+
+  setSubmitting(true);
+
+  try {
+    // 👉 default values for hidden fields
+    const payload = {
+      merchantId,
+      amount: form.amount,
+      customerName: "Customer",
+      customerEmail: `user${Date.now()}@steppays.in`,
+      customerPhone: "9999999999"
+    };
+
+    const { data } = await paymentAPI.initiate(payload);
+
+    // 👉 Create PayU form
+    const payuForm = document.createElement('form');
+    payuForm.method = 'POST';
+    payuForm.action = data.data.payuUrl;
+
+    Object.entries(data.data.params).forEach(([key, value]) => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = value;
+      payuForm.appendChild(input);
+    });
+
+    document.body.appendChild(payuForm);
+    payuForm.submit();
+
+  } catch (err) {
+    setError(err.response?.data?.message || 'Failed to initiate payment. Please try again.');
+    setSubmitting(false);
+  }
+};
+
+
 
   if (loading) return (
     <div className="payment-wrapper">
